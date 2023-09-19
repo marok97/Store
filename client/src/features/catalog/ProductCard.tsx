@@ -7,17 +7,34 @@ import {
   CardMedia,
   Typography,
   CardHeader,
+  Container,
 } from "@mui/material";
 import { Product } from "../../app/models/product";
 import { Link } from "react-router-dom";
+import agent from "../../app/api/agent";
+import { toast } from "react-toastify";
+import { LoadingButton } from "@mui/lab";
+import { useState } from "react";
+import { useStoreContext } from "../../app/context/StoreContext";
 
 interface Props {
   product: Product;
 }
 
 export default function ProductCard({ product }: Props) {
+  const [loading, setLoading] = useState(false);
+  const { setShoppingCart } = useStoreContext();
+
+  function addItemToCart() {
+    setLoading(true);
+    agent.ShoppingCart.postItemToShoppingCart(product.id, 1)
+      .then((shoppingCart) => setShoppingCart(shoppingCart))
+      .then(() => toast.success(`${product.name} added to cart.`))
+      .finally(() => setLoading(false));
+  }
+
   return (
-    <>
+    <Container>
       <Card>
         <CardHeader
           titleTypographyProps={{
@@ -48,12 +65,14 @@ export default function ProductCard({ product }: Props) {
           </Typography>
         </CardContent>
         <CardActions>
-          <Button size="small">Add to cart</Button>
+          <LoadingButton loading={loading} size="small" onClick={addItemToCart}>
+            Add to cart
+          </LoadingButton>
           <Button component={Link} to={`/catalog/${product.id}`} size="small">
             View
           </Button>
         </CardActions>
       </Card>
-    </>
+    </Container>
   );
 }

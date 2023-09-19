@@ -9,7 +9,8 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
+import { useStoreContext } from "../context/StoreContext";
 
 const navStyles = {
   color: "inherit",
@@ -44,6 +45,11 @@ const rightLinks = [
 ];
 
 export default function Header() {
+  const { shoppingCart } = useStoreContext();
+  const itemCount = shoppingCart?.items.reduce(
+    (sum, item) => sum + item.quantityInCart,
+    0
+  );
   return (
     <>
       <AppBar position="static" sx={{ mb: 4 }}>
@@ -54,8 +60,14 @@ export default function Header() {
             alignItems: "center",
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center"}}>
-            <Typography variant="h6" component={NavLink} to="/" sx={navStyles} mr={2}>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Typography
+              variant="h6"
+              component={NavLink}
+              to="/"
+              sx={navStyles}
+              mr={2}
+            >
               RE-STORE
             </Typography>
 
@@ -75,12 +87,14 @@ export default function Header() {
 
           <Box sx={{ display: "flex" }}>
             <IconButton
+              component={Link}
+              to="/shoppingcart"
               size="large"
               edge="start"
               color="inherit"
               sx={{ mr: 2 }}
             >
-              <Badge badgeContent="2" color="secondary">
+              <Badge badgeContent={itemCount} color="secondary">
                 <ShoppingCart />
               </Badge>
             </IconButton>

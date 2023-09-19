@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import { router } from "../router/Routes";
 
 axios.defaults.baseURL = "http://localhost:5000/api/";
+axios.defaults.withCredentials = true;
 
 const responseBody = (response: AxiosResponse) => response.data;
 
@@ -65,9 +66,21 @@ const ErrorTesting = {
   serverError: () => requests.get("buggy/server-error"),
 };
 
+const ShoppingCart = {
+  getShoppingCart: () => requests.get("shoppingcart"),
+  postItemToShoppingCart: (productId: number, quantity: number) =>
+    requests.post(
+      `shoppingcart?productId=${productId}&quantity=${quantity}`,
+      {}
+    ),
+  removeShoppingCartItem: (productId: number, quantity: number) =>
+    requests.delete(`shoppingcart?productId=${productId}&quantity=${quantity}`),
+};
+
 const agent = {
   Catalog,
   ErrorTesting,
+  ShoppingCart,
 };
 
 export default agent;

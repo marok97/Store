@@ -15,7 +15,7 @@ namespace API.Controllers
 
         }
 
-        [HttpGet(Name = "GetBasket")]
+        [HttpGet(Name = "GetShoppingCart")]
         public async Task<ActionResult<ShoppingCartDto>> GetShoppingCart()
         {
             var shoppingCart = await GetShoppingCartFromCookie();
@@ -39,7 +39,7 @@ namespace API.Controllers
             shoppingCart.AddItem(product, quantity);
             // save the changes
             var result = await _storeContext.SaveChangesAsync() > 0;
-            if (result) return CreatedAtRoute("GetBasket", MapShoppingCartToDto(shoppingCart));
+            if (result) return CreatedAtRoute("GetShoppingCart", MapShoppingCartToDto(shoppingCart));
 
             return BadRequest(new ProblemDetails { Title = "Problem saving to cart." });
         }
@@ -104,7 +104,7 @@ namespace API.Controllers
                             Name = item.Product.Name,
                             Brand = item.Product.Brand,
                             PictureUrl = item.Product.PictureUrl,
-                            QuantityInStock = item.Quantity,
+                            QuantityInCart = item.Quantity,
                             Price = item.Product.Price,
                             Type = item.Product.Type
                         }).ToList()
