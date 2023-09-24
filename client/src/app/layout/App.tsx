@@ -3,28 +3,28 @@ import Header from "./Header";
 import { Container, CssBaseline } from "@mui/material";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useStoreContext } from "../context/StoreContext";
 import { useEffect, useState } from "react";
 import { getCookie } from "../util/util";
 import agent from "../api/agent";
 import LoadingComponent from "./LoadingComponent";
+import { useAppDispatch } from "../api/store/store";
+import { setShoppingCart } from "../../features/shoppingCart/shoppingCartSlice";
 
 function App() {
   const [loading, setLoading] = useState(true);
-  const { setShoppingCart } = useStoreContext();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     const buyerId = getCookie("buyerId");
     if (buyerId) {
       agent.ShoppingCart.getShoppingCart()
-        .then((cart) => setShoppingCart(cart))
+        .then((cart) => dispatch(setShoppingCart(cart)))
         .catch((error) => console.log(error))
         .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
     }
-    else{
-      setLoading(false)
-    }
-  }, [setShoppingCart]);
+  }, [dispatch]);
 
   if (loading) return <LoadingComponent message="Initalizing ..." />;
 

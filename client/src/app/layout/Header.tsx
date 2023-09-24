@@ -10,7 +10,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Link, NavLink } from "react-router-dom";
-import { useStoreContext } from "../context/StoreContext";
+import { useAppSelector } from "../api/store/store";
 
 const navStyles = {
   color: "inherit",
@@ -45,7 +45,7 @@ const rightLinks = [
 ];
 
 export default function Header() {
-  const { shoppingCart } = useStoreContext();
+  const { shoppingCart } = useAppSelector(state => state.shoppingCart)
   const itemCount = shoppingCart?.items.reduce(
     (sum, item) => sum + item.quantityInCart,
     0

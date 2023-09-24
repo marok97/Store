@@ -8,19 +8,24 @@ import {
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,
   TableRow,
   Typography,
 } from "@mui/material";
 import { Add, Delete, Remove } from "@mui/icons-material";
-import { useStoreContext } from "../../app/context/StoreContext";
 import { useEffect, useState } from "react";
-import agent from "../../app/api/agent";
 import { LoadingButton } from "@mui/lab";
 import { NavLink } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../../app/api/store/store";
+import {
+  addShoppingCartItemAsync,
+  removeShoppingCartItemAsync,
+} from "./shoppingCartSlice";
 
 export default function ShoppingCartPage() {
-  const { shoppingCart, removeItem, setShoppingCart } = useStoreContext();
+  const dispatch = useAppDispatch();
+  const { shoppingCart, status } = useAppSelector(
+    (state) => state.shoppingCart
+  );
   const itemCount = shoppingCart?.items.reduce(
     (sum, item) => sum + item.quantityInCart,
     0
@@ -44,42 +49,28 @@ export default function ShoppingCartPage() {
     }
   }, [totalPrice]);
 
-  const [status, setStatus] = useState({
-    loading: false,
-    name: "",
-  });
-
-  function addItem(productId: number, name: string) {
-    setStatus({
-      loading: true,
-      name: name,
-    });
-    agent.ShoppingCart.postItemToShoppingCart(productId, 1)
-      .then((shoppingCart) => setShoppingCart(shoppingCart))
-      .catch((error) => console.log(error))
-      .finally(() => setStatus({ loading: false, name: "" }));
+  function addItem(productId: number) {
+    dispatch(addShoppingCartItemAsync({ productId: productId }));
   }
 
-  function removeAllItems(productId: number, quantity: number, name: string) {
-    setStatus({
-      loading: true,
-      name: name,
-    });
-    agent.ShoppingCart.removeShoppingCartItem(productId, quantity)
-      .then(() => removeItem(productId, quantity))
-      .catch((error) => console.log(error))
-      .finally(() => setStatus({ loading: false, name: "" }));
+  function removeAllItems(productId: number, quantity: number) {
+    dispatch(
+      removeShoppingCartItemAsync({
+        productId: productId,
+        quantity: quantity,
+        name: "del",
+      })
+    );
   }
 
-  function removeOneItem(productId: number, quantity = 1, name: string) {
-    setStatus({
-      loading: true,
-      name: name,
-    });
-    agent.ShoppingCart.removeShoppingCartItem(productId, quantity)
-      .then(() => removeItem(productId, quantity))
-      .catch((error) => console.log(error))
-      .finally(() => setStatus({ loading: false, name: "" }));
+  function removeOneItem(productId: number, quantity = 1) {
+    dispatch(
+      removeShoppingCartItemAsync({
+        productId: productId,
+        quantity: quantity,
+        name: "rem",
+      })
+    );
   }
   if (!shoppingCart) return <Typography>Shopping cart empty</Typography>;
   return (
@@ -124,31 +115,20 @@ export default function ShoppingCartPage() {
                       <LoadingButton
                         size="small"
                         color="success"
-                        loading={
-                          status.loading &&
-                          status.name === "add" + item.productId
-                        }
-                        onClick={() =>
-                          addItem(item.productId, "add" + item.productId)
-                        }
+                        loading={status === "pendingAddItem" + item.productId}
+                        onClick={() => addItem(item.productId)}
                       >
                         <Add />
                       </LoadingButton>
                       {item.quantityInCart}
                       <LoadingButton
                         loading={
-                          status.loading &&
-                          status.name === "rem" + item.productId
+                          status ===
+                          "pendingRemoveItem" + item.productId + "rem"
                         }
                         color="error"
                         size="small"
-                        onClick={() =>
-                          removeOneItem(
-                            item.productId,
-                            1,
-                            "rem" + item.productId
-                          )
-                        }
+                        onClick={() => removeOneItem(item.productId)}
                       >
                         <Remove />
                       </LoadingButton>
@@ -160,15 +140,11 @@ export default function ShoppingCartPage() {
                   <TableCell align="center">
                     <LoadingButton
                       loading={
-                        status.loading && status.name === "del" + item.productId
+                        status === "pendingRemoveItem" + item.productId + "del"
                       }
                       color="error"
                       onClick={() =>
-                        removeAllItems(
-                          item.productId,
-                          item.quantityInCart,
-                          "del" + item.productId
-                        )
+                        removeAllItems(item.productId, item.quantityInCart)
                       }
                     >
                       <Delete />
